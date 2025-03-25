@@ -1,0 +1,93 @@
+# Reglas de Desarrollo para Planificador de Contenido en WordPress
+
+## Especificaciones técnicas
+
+### Lenguajes requeridos
+- **HTML5**: Para la estructura del bloque de Gutenberg
+- **CSS3**: Para el diseño y estilo del planificador
+- **JavaScript puro**: Para la funcionalidad de arrastrar y soltar, botón de agregar elementos, la generación de PDF, el botón de imprimir, la función de exportar en formato CSV e importar.
+
+### Estructura del proyecto
+- Código totalmente compatible con Gutenberg
+- Implementación mediante bloque HTML personalizado
+- Sin dependencia de plugins adicionales
+- Compatible con todas las versiones de WordPress 5.0+
+## Mejores prácticas de desarrollo
+
+### Código HTML
+- Estructura semántica con elementos HTML5 apropiados
+- Uso de atributos ARIA para accesibilidad
+- Validación W3C del código HTML
+- Comentarios descriptivos en secciones clave
+
+### Código CSS
+- Enfoque "mobile-first" con diseño responsivo
+- Variables CSS para gestión de colores y estilos
+- Prefijos para propiedades que requieran compatibilidad entre navegadores
+- Optimización de rendimiento de animaciones
+- BEM (Block Element Modifier) para nomenclatura de clases
+
+### Código JavaScript
+- Código ES6+ compatible con navegadores modernos
+- Evitar uso de variables globales
+- Manejo adecuado de eventos (delegación cuando sea apropiado)
+- Validación de datos de entrada
+- Comentarios explicativos para funciones complejas
+- Manejo apropiado de errores
+
+## Prevención de vulnerabilidades
+
+### Seguridad general
+- Sanitización de todos los datos de entrada
+- Escape apropiado de salidas HTML
+- No uso de innerHTML donde sea evitable
+- Evitar eval() y otras funciones potencialmente peligrosas
+
+### XSS (Cross-Site Scripting)
+- Filtrar y validar todos los datos ingresados por el usuario
+- Usar textContent en lugar de innerHTML cuando sea posible
+- Implementar CSP (Content Security Policy) apropiado
+
+### CSRF (Cross-Site Request Forgery)
+- Validar origen de peticiones
+- Implementar tokens de seguridad para operaciones críticas
+
+### Inyección de código
+- Escapar correctamente todas las entradas de usuario
+- No usar concatenación directa de cadenas para generar HTML
+
+## Rendimiento y optimización
+
+### Optimización de carga
+- Minimización de CSS y JavaScript para producción
+- Optimización de imágenes utilizadas
+- Uso de lazy loading cuando sea apropiado
+
+### Rendimiento del DOM
+- Minimizar operaciones de manipulación del DOM
+- Uso de DocumentFragment para inserciones múltiples
+- Evitar layout thrashing (alternancia entre lecturas y escrituras del DOM)
+
+### Manejo de memoria
+- Evitar memory leaks (eliminar event listeners cuando no se necesiten)
+- Limpieza apropiada de recursos
+- Optimización de closures y alcance de variables
+
+## Accesibilidad
+
+### Estándares WCAG
+- Cumplimiento con WCAG 2.1 nivel AA
+- Contraste de color adecuado
+- Navegación por teclado completa
+- Etiquetas y textos alternativos informativos
+
+### Dispositivos y navegadores
+- Compatibilidad con lectores de pantalla
+- Pruebas en múltiples dispositivos y navegadores
+- Funcionalidad degradable elegantemente
+
+## Documentación
+
+### Código
+- Comentarios explicativos para secciones complejas
+- Explicación clara de la estructura de datos

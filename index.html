@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificador de Redes Sociales</title>
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .planner-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Estilos del encabezado */
+        .planner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .planner-header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+        }
+        
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .month-navigation button {
+            background-color: #f1f1f1;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .month-navigation button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        #current-month {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        /* Estilos de la cuadrícula */
+        .planner-grid {
+            display: grid;
+            grid-template-columns: 120px repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .week-header {
+            grid-column: 1 / -1;
+            background-color: #f1f8ff;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .day-label {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+        }
+        
+        .content-cell {
+            min-height: 50px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            padding: 10px;
+            position: relative;
+        }
+        
+        /* Botón de añadir */
+        .add-content-btn {
+            width: 40px;
+            height: 25px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 5px auto;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .add-content-btn:hover {
+            background-color: #3367d6;
+            transform: scale(1.05);
+        }
+        
+        /* Estilos de los bloques de contenido */
+        .content-block {
+            background-color: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            cursor: move;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .content-block:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        }
+        
+        .content-block.dragging {
+            opacity: 0.7;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .block-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: none;
+        }
+        
+        .content-block:hover .block-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .action-icon:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .delete-icon:hover {
+            color: #e53935;
+        }
+        
+        .duplicate-icon:hover {
+            color: #43a047;
+        }
+        
+        /* Formulario dentro de los bloques */
+        .block-form {
+            margin-top: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 8px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 3px;
+            color: #666;
+        }
+        
+        .form-group select, .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+        
+        /* Colores por tipo de contenido */
+        .content-type-Educativo {
+            border-left: 4px solid #4285f4;
+        }
+        
+        .content-type-Entretenimiento {
+            border-left: 4px solid #ea4335;
+        }
+        
+        .content-type-Promocional {
+            border-left: 4px solid #fbbc05;
+        }
+        
+        .content-type-Testimonios {
+            border-left: 4px solid #34a853;
+        }
+        
+        .content-type-DetrasDeCamaras {
+            border-left: 4px solid #9c27b0;
+        }
+        
+        .content-type-Tendencias {
+            border-left: 4px solid #ff6d00;
+        }
+        
+        /* Estilos del footer */
+        .planner-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .action-button {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+        
+        .action-button:hover {
+            background-color: #3367d6;
+        }
+        
+        /* Estilos para arrastrar y soltar */
+        .drag-over {
+            background-color: #e8f0fe;
+            border: 2px dashed #4285f4;
+        }
+        
+        /* Estilos para impresión */
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .planner-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 10px;
+            }
+            
+            .planner-actions, .add-content-btn, .block-actions {
+                display: none !important;
+            }
+            
+            .content-block {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="planner-container">
+        <header class="planner-header">
+            <h1>Planificador de Redes Sociales</h1>
+            <div class="month-navigation">
+                <button id="prev-month">&lt;</button>
+                <span id="current-month">Marzo 2025</span>
+                <button id="next-month">&gt;</button>
+            </div>
+        </header>
+        
+        <main class="planner-grid">
+            <!-- La cuadrícula de 5 semanas se generará dinámicamente con JavaScript -->
+        </main>
+        
+        <footer class="planner-actions">
+            <button id="export-pdf" class="action-button">Exportar a PDF</button>
+            <button id="print" class="action-button">Imprimir</button>
+            <button id="export-csv" class="action-button">Exportar a CSV</button>
+            <div class="import-container">
+                <label for="import-csv" class="action-button">Importar CSV</label>
+                <input type="file" id="import-csv" accept=".csv" hidden>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentDate = new Date();
+        let plannerData = [];
+        let draggedElement = null;
+        
+        // Días de la semana
+        const weekDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        
+        // Tipos de contenido y publicación
+        const contentTypes = ['Educativo', 'Entretenimiento', 'Promocional', 'Testimonios', 'DetrasDeCamaras', 'Tendencias'];
+        const publicationTypes = ['Normal', 'En vivo', 'Historia', 'Carrusel', 'Tienda'];
+        
+        // Inicialización cuando el DOM está cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            initPlanner();
+            setupEventListeners();
+        });
+        
+        // Inicializar el planificador
+        function initPlanner() {
+            updateCurrentMonthDisplay();
+            generateGrid();
+            loadFromLocalStorage();
+        }
+        
+        // Actualizar la visualización del mes actual
+        function updateCurrentMonthDisplay() {
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            document.getElementById('current-month').textContent = 
+                `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+        }
+        
+        // Generar la cuadrícula de 5 semanas
+        function generateGrid() {
+            const plannerGrid = document.querySelector('.planner-grid');
+            plannerGrid.innerHTML = '';
+            
+            // Generar 5 semanas
+            for (let week = 1; week <= 5; week++) {
+                // Encabezado de la semana
+                const weekHeader = document.createElement('div');
+                weekHeader.className = 'week-header';
+                weekHeader.textContent = `Semana ${week}`;
+                weekHeader.dataset.week = week;
+                plannerGrid.appendChild(weekHeader);
+                
+                // Generar días para esta semana
+                for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+                    // Etiqueta del día
+                    const dayLabel = document.createElement('div');
+                    dayLabel.className = 'day-label';
+                    dayLabel.textContent = weekDays[dayIndex];
+                    dayLabel.dataset.day = dayIndex;
+                    dayLabel.dataset.week = week;
+                    plannerGrid.appendChild(dayLabel);
+                    
+                    // Generar 3 celdas de contenido para este día
+                    for (let column = 1; column <= 3; column++) {
+                        const contentCell = document.createElement('div');
+                        contentCell.className = 'content-cell';
+                        contentCell.dataset.day = dayIndex;
+                        contentCell.dataset.week = week;
+                        contentCell.dataset.column = column;
+                        
+                        // Botón para añadir contenido
+                        const addButton = document.createElement('button');
+                        addButton.className = 'add-content-btn';
+                        addButton.innerHTML = '+';
+                        addButton.dataset.day = dayIndex;
+                        addButton.dataset.week = week;
+                        addButton.dataset.column = column;
+                        
+                        contentCell.appendChild(addButton);
+                        plannerGrid.appendChild(contentCell);
+                    }
+                }
+            }
+        }
+        
+        // Configurar los event listeners
+        function setupEventListeners() {
+            // Navegación de meses
+            document.getElementById('prev-month').addEventListener('click', navigateToPreviousMonth);
+            document.getElementById('next-month').addEventListener('click', navigateToNextMonth);
+            
+            // Botones de exportación e importación
+            document.getElementById('export-pdf').addEventListener('click', exportToPDF);
+            document.getElementById('print').addEventListener('click', printPlanner);
+            document.getElementById('export-csv').addEventListener('click', exportToCSV);
+            document.getElementById('import-csv').addEventListener('change', importFromCSV);
+            
+            // Delegación de eventos para botones de añadir y acciones de bloques
+            document.querySelector('.planner-grid').addEventListener('click', handleGridClick);
+            
+            // Configurar eventos de arrastrar y soltar
+            setupDragAndDrop();
+        }
+
+        // Manejar clics en la cuadrícula (delegación de eventos)
+        function handleGridClick(event) {
+            // Manejar clic en botón de añadir
+            if (event.target.classList.contains('add-content-btn')) {
+                const { day, week, column } = event.target.dataset;
+                addContentBlock(day, week, column);
+            }
+            
+            // Manejar clic en icono de eliminar
+            if (event.target.classList.contains('delete-icon')) {
+                if (confirm('¿Estás seguro de que deseas eliminar este bloque?')) {
+                    const contentBlock = event.target.closest('.content-block');
+                    contentBlock.remove();
+                    saveToLocalStorage();
+                }
+            }
+            
+            // Manejar clic en icono de duplicar
+            if (event.target.classList.contains('duplicate-icon')) {
+                const contentBlock = event.target.closest('.content-block');
+                duplicateContentBlock(contentBlock);
+            }
+        }
+        
+        // Añadir un nuevo bloque de contenido
+        function addContentBlock(day, week, column, data = null) {
+            const cell = document.querySelector(`.content-cell[data-day="${day}"][data-week="${week}"][data-column="${column}"]`);
+            
+            // Crear el bloque de contenido
+            const contentBlock = document.createElement('div');
+            contentBlock.className = 'content-block';
+            contentBlock.dataset.day = day;
+            contentBlock.dataset.week = week;
+            contentBlock.dataset.column = column;
+            contentBlock.draggable = true;
+            
+            // Añadir íconos de acción
+            const blockActions = document.createElement('div');
+            blockActions.className = 'block-actions';
+            
+            const deleteIcon = document.createElement('div');
+            deleteIcon.className = 'action-icon delete-icon';
+            deleteIcon.innerHTML = '🗑️';
+            
+            const duplicateIcon = document.createElement('div');
+            duplicateIcon.className = 'action-icon duplicate-icon';
+            duplicateIcon.innerHTML = '📋';
+            
+            blockActions.appendChild(deleteIcon);
+            blockActions.appendChild(duplicateIcon);
+            contentBlock.appendChild(blockActions);
+            
+            // Crear el formulario dentro del bloque
+            const blockForm = document.createElement('div');
+            blockForm.className = 'block-form';
+            
+            // Tipo de Contenido
+            const contentTypeGroup = document.createElement('div');
+            contentTypeGroup.className = 'form-group';
+            
+            const contentTypeLabel = document.createElement('label');
+            contentTypeLabel.textContent = 'Tipo de Contenido';
+            
+            const contentTypeSelect = document.createElement('select');
+            contentTypeSelect.className = 'content-type-select';
+            
+            contentTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type.replace(/([A-Z])/g, ' $1').trim(); // Añadir espacios antes de mayúsculas
+                contentTypeSelect.appendChild(option);
+            });
+            
+            contentTypeGroup.appendChild(contentTypeLabel);
+            contentTypeGroup.appendChild(contentTypeSelect);
+            
+            // Tipo de Publicación
+            const pubTypeGroup = document.createElement('div');
+            pubTypeGroup.className = 'form-group';
+            
+            const pubTypeLabel = document.createElement('label');
+            pubTypeLabel.textContent = 'Tipo de Publicación';
+            
+            const pubTypeSelect = document.createElement('select');
+            pubTypeSelect.className = 'publication-type-select';
+            
+            publicationTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                pubTypeSelect.appendChild(option);
+            });
+            
+            pubTypeGroup.appendChild(pubTypeLabel);
+            pubTypeGroup.appendChild(pubTypeSelect);
+            
+            // Título
+            const titleGroup = document.createElement('div');
+            titleGroup.className = 'form-group';
+            
+            const titleLabel = document.createElement('label');
+            titleLabel.textContent = 'Título';
+            
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.className = 'title-input';
+            titleInput.placeholder = 'Escribe el Título de contenido a crear';
+            
+            titleGroup.appendChild(titleLabel);
+            titleGroup.appendChild(titleInput);
+            
+            // Descripción
+            const descGroup = document.createElement('div');
+            descGroup.className = 'form-group';
+            
+            const descLabel = document.createElement('label');
+            descLabel.textContent = 'Descripción';
+            
+            const descTextarea = document.createElement('textarea');
+            descTextarea.className = 'description-textarea';
+            descTextarea.placeholder = 'Escribe una breve descripción';
+            
+            descGroup.appendChild(descLabel);
+            descGroup.appendChild(descTextarea);
+            
+            // Añadir todos los grupos al formulario
+            blockForm.appendChild(contentTypeGroup);
+            blockForm.appendChild(pubTypeGroup);
+            blockForm.appendChild(titleGroup);
+            blockForm.appendChild(descGroup);
+            
+            // Añadir el formulario al bloque
+            contentBlock.appendChild(blockForm);
+            
+            // Insertar el bloque antes del botón de añadir
+            cell.insertBefore(contentBlock, cell.querySelector('.add-content-btn'));
+            
+            // Si hay datos para prellenar, hacerlo
+            if (data) {
+                contentTypeSelect.value = data.contentType;
+                pubTypeSelect.value = data.publicationType;
+                titleInput.value = data.title;
+                descTextarea.value = data.description;
+            }
+            
+            // Actualizar la clase del bloque según el tipo de contenido
+            updateBlockContentTypeClass(contentBlock, contentTypeSelect.value);
+            
+            // Añadir event listener para cambios en el tipo de contenido
+            contentTypeSelect.addEventListener('change', function() {
+                updateBlockContentTypeClass(contentBlock, this.value);
+                saveToLocalStorage();
+            });
+            
+            // Añadir event listeners para guardar cambios
+            pubTypeSelect.addEventListener('change', saveToLocalStorage);
+            titleInput.addEventListener('input', saveToLocalStorage);
+            descTextarea.addEventListener('input', saveToLocalStorage);
+            
+            saveToLocalStorage();
+            return contentBlock;
+        }
+        
+        // Actualizar la clase del bloque según el tipo de contenido
+        function updateBlockContentTypeClass(block, contentType) {
+            // Eliminar todas las clases de tipo de contenido existentes
+            contentTypes.forEach(type => {
+                block.classList.remove(`content-type-${type}`);
+            });
+            
+            // Añadir la clase correspondiente al tipo seleccionado
+            block.classList.add(`content-type-${contentType}`);
+        }
+        
+        // Duplicar un bloque de contenido
+        function duplicateContentBlock(originalBlock) {
+            const { day, week, column } = originalBlock.dataset;
+            
+            // Obtener los valores del formulario original
+            const contentType = originalBlock.querySelector('.content-type-select').value;
+            const publicationType = originalBlock.querySelector('.publication-type-select').value;
+            const title = originalBlock.querySelector('.title-input').value;
+            const description = originalBlock.querySelector('.description-textarea').value;
+            
+            // Crear un nuevo bloque con los mismos datos
+            const newBlock = addContentBlock(day, week, column, {
+                contentType,
+                publicationType,
+                title,
+                description
+            });
+            
+            // Insertar el nuevo bloque después del original
+            originalBlock.after(newBlock);
+            
+            saveToLocalStorage();
+        }
+        
+        // Navegar al mes anterior
+        function navigateToPreviousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            updateCurrentMonthDisplay();
+        }
+        
+        // Navegar al mes siguiente
+        function navigateToNextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            updateCurrentMonthDisplay();
+        }
+        
+        // Función para guardar datos en LocalStorage
+        function saveToLocalStorage() {
+            const contentBlocks = document.querySelectorAll('.content-block');
+            const dataToSave = Array.from(contentBlocks).map(block => {
+                return {
+                    day: block.dataset.day,
+                    week: block.dataset.week,
+                    column: block.dataset.column,
+                    contentType: block.querySelector('.content-type-select').value,
+                    publicationType: block.querySelector('.publication-type-select').value,
+                    title: block.querySelector('.title-input').value,
+                    description: block.querySelector('.description-textarea').value
+                };
+            });
+            localStorage.setItem('plannerData', JSON.stringify(dataToSave));
+        }
+        
+        // Función para cargar datos desde LocalStorage
+        function loadFromLocalStorage() {
+            const storedData = localStorage.getItem('plannerData');
+            if (storedData) {
+                plannerData = JSON.parse(storedData);
+                plannerData.forEach(data => {
+                    addContentBlock(data.day, data.week, data.column, data);
+                });
+            }
+        }
+        
+        // Función para exportar a PDF
+        function exportToPDF() {
+            // Crear un elemento temporal para la versión de impresión
+            const printContent = document.querySelector('.planner-container').cloneNode(true);
+            
+            // Eliminar los botones de acción y otros elementos no deseados
+            printContent.querySelectorAll('.add-content-btn, .block-actions, .planner-actions').forEach(el => {
+                el.remove();
+            });
+            
+            // Crear un iframe oculto para imprimir a PDF
+            const printFrame = document.createElement('iframe');
+            printFrame.style.position = 'absolute';
+            printFrame.style.width = '0';
+            printFrame.style.height = '0';
+            printFrame.style.left = '-9999px';
+            document.body.appendChild(printFrame);
+            
+            // Escribir el contenido en el iframe
+            printFrame.contentDocument.write(`
+                <html>
+                <head>
+                    <title>Planificador de Redes Sociales - ${document.getElementById('current-month').textContent}</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            padding: 20px;
+                        }
+                        .planner-container {
+                            width: 100%;
+                        }
+                        .planner-grid {
+                            display: grid;
+                            grid-template-columns: 120px repeat(3, 1fr);
+                            gap: 10px;
+                            margin-bottom: 30px;
+                        }
+                        .week-header {
+                            grid-column: 1 / -1;
+                            background-color: #f1f8ff;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            margin-top: 15px;
+                            margin-bottom: 5px;
+                        }
+                        .day-label {
+                            background-color: #f8f9fa;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-weight: 500;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 50px;
+                        }
+                        .content-cell {
+                            min-height: 50px;
+                            background-color: #f9f9f9;
+                            border-radius: 6px;
+                            padding: 10px;
+                        }
+                        .content-block {
+                            background-color: white;
+                            border-radius: 6px;
+                            padding: 12px;
+                            margin-bottom: 10px;
+                            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+                        }
+                        .block-form {
+                            margin-top: 5px;
+                        }
+                        .form-group {
+                            margin-bottom: 8px;
+                        }
+                        .form-group label {
+                            display: block;
+                            font-size: 12px;
+                            margin-bottom: 3px;
+                            color: #666;
+                        }
+                        ${contentTypes.map(type => 
+                            `.content-type-${type} { border-left: 4px solid ${getColorForType(type)}; }`
+                        ).join('\n')}
+                    </style>
+                </head>
+                <body>
+                    ${printContent.outerHTML}
+                </body>
+                </html>
+            `);
+            
+            // Cerrar el documento y generar el PDF
+            printFrame.contentDocument.close();
+            
+            // Esperar a que se cargue el contenido
+            setTimeout(() => {
+                printFrame.contentWindow.focus();
+                printFrame.contentWindow.print();
+                
+                // Eliminar el iframe después de imprimir
+                setTimeout(() => {
+                    document.body.removeChild(printFrame);
+                }, 1000);
+            }, 500);
+        }
+        
+        // Función auxiliar para obtener color según el tipo de contenido
+        function getColorForType(type) {
+            const colorMap = {
+                'Educativo': '#4285f4',
+                'Entretenimiento': '#ea4335',
+                'Promocional': '#fbbc05',
+                'Testimonios': '#34a853',
+                'DetrasDeCamaras': '#9c27b0',
+                'Tendencias': '#ff6d00'
+            };
+            return colorMap[type] || '#000000';
+        }
+        
+        // Función para imprimir
+        function printPlanner() {
+            window.print();
+        }
+        
+        // Función para exportar a CSV
+        function exportToCSV() {
+            const contentBlocks = document.querySelectorAll('.content-block');
+            let csvContent = 'Día,Tipo de Contenido,Tipo de Publicación,Título,Descripción,Semana,Número de bloque de contenido\n';
+            
+            // Crear un mapa para contar bloques por día
+            const blockCountMap = {};
+            
+            Array.from(contentBlocks).forEach(block => {
+                const day = weekDays[parseInt(block.dataset.day)];
+                const week = block.dataset.week;
+                const contentType = block.querySelector('.content-type-select').value;
+                const publicationType = block.querySelector('.publication-type-select').value;
+                const title = block.querySelector('.title-input').value.replace(/,/g, ';'); // Reemplazar comas para evitar problemas con CSV
+                const description = block.querySelector('.description-textarea').value.replace(/,/g, ';').replace(/\n/g, ' '); // Reemplazar comas y saltos de línea
+                
+                // Calcular el número de bloque para este día
+                const dayKey = `${day}-${week}`;
+                if (!blockCountMap[dayKey]) {
+                    blockCountMap[dayKey] = 1;
+                } else {
+                    blockCountMap[dayKey]++;
+                }
+                
+                csvContent += `${day},${contentType},${publicationType},${title},${description},${week},${blockCountMap[dayKey]}\n`;
+            });
+            
+            // Crear un enlace de descarga
+            const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `planificador_redes_${document.getElementById('current-month').textContent.replace(' ', '_')}.csv`);
+            document.body.appendChild(link);
+            
+            // Descargar el archivo
+            link.click();
+            
+            // Eliminar el enlace
+            document.body.removeChild(link);
+        }
+        
+        // Función para importar desde CSV
+        function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvData = e.target.result;
+                const lines = csvData.split('\n');
+                
+                // Ignorar la primera línea (encabezados)
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    const columns = lines[i].split(',');
+                    if (columns.length < 7) continue;
+                    
+                    const day = weekDays.indexOf(columns[0]);
+                    const contentType = columns[1];
+                    const publicationType = columns[2];
+                    const title = columns[3];
+                    const description = columns[4];
+                    const week = columns[5];
+                    
+                    // Buscar la celda correspondiente
+                    const cell = document.querySelector(`.content-cell[data-day="${day}"][data-week="${week}"]`);
+                    if (cell) {
+                        // Crear un nuevo bloque con los datos importados
+                        addContentBlock(day, week, cell.dataset.column, {
+                            contentType,
+                            publicationType,
+                            title,
+                            description
+                        });
+                    }
+                }
+                
+                // Limpiar el input de archivo
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+        
+        // Configurar eventos de arrastrar y soltar
+        function setupDragAndDrop() {
+            const plannerGrid = document.querySelector('.planner-grid');
+            
+            // Evento para iniciar el arrastre
+            plannerGrid.addEventListener('dragstart', function(event) {
+                if (event.target.classList.contains('content-block')) {
+                    draggedElement = event.target;
+                    event.target.classList.add('dragging');
+                    
+                    // Establecer datos para la transferencia
+                    event.dataTransfer.setData('text/plain', 'dragging-content-block');
+                    event.dataTransfer.effectAllowed = 'move';
+                }
+            });
+            
+            // Evento para finalizar el arrastre
+            plannerGrid.addEventListener('dragend', function(event) {
+                if (event.target.classList.contains('content-block')) {
+                    event.target.classList.remove('dragging');
+                    draggedElement = null;
+                }
+            });
+            
+            // Evento para permitir soltar
+            plannerGrid.addEventListener('dragover', function(event) {
+                event.preventDefault();
+                const targetCell = event.target.closest('.content-cell');
+                if (targetCell && draggedElement) {
+                    targetCell.classList.add('drag-over');
+                }
+            });
+            
+            // Evento para cuando el elemento sale de un área
+            plannerGrid.addEventListener('dragleave', function(event) {
+                const targetCell = event.target.closest('.content-cell');
+                if (targetCell) {
+                    targetCell.classList.remove('drag-over');
+                }
+            });
+            
+            // Evento para soltar el elemento
+            plannerGrid.addEventListener('drop', function(event) {
+                event.preventDefault();
+                const targetCell = event.target.closest('.content-cell');
+                
+                if (targetCell && draggedElement) {
+                    // Eliminar clase de resaltado
+                    targetCell.classList.remove('drag-over');
+                    
+                    // Actualizar los atributos de datos
+                    draggedElement.dataset.day = targetCell.dataset.day;
+                    draggedElement.dataset.week = targetCell.dataset.week;
+                    draggedElement.dataset.column = targetCell.dataset.column;
+                    
+                    // Mover el elemento antes del botón de añadir
+                    targetCell.insertBefore(draggedElement, targetCell.querySelector('.add-content-btn'));
+                    
+                    // Guardar los cambios
+                    saveToLocalStorage();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
